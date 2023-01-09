@@ -72,10 +72,9 @@ def read_root(request: Request):
 
 # endpoint which returns an image of a bird sampled from the Generator model
 @app.get("/bird")
-def get_bird():
+def get_bird(num_samples: int = 1):
     # create batch of latent vectors for visualising generator progression
-    fixed_noise = torch.randn(64, nz, 1, 1, device=device)
-
+    fixed_noise = torch.randn(num_samples, nz, 1, 1, device=device)
     with torch.no_grad():
         fake = netG(fixed_noise).detach().cpu()
     grid = vutils.make_grid(fake, padding=2, normalize=True)
