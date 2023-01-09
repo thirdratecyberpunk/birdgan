@@ -21,16 +21,22 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
 
-# setting seed
-# manual_seed = random.randint(1,10000)
-manual_seed = 42
+parser = argparse.ArgumentParser(description="Train a GAN to generate images of birds.")
+parser.add_argument('--seed', type = int, default = 42, help="Value used as the seed for random generators")
+parser.add_argument('--epochs', type= int, default = 100, help="Number of epochs to run")
+
+args = parser.parse_args()
+# seed for RNG
+manual_seed = args.seed
+# number of training epochs
+num_epochs = args.epochs
 
 print(f"Seed: {manual_seed}")
 random.seed(manual_seed)
 torch.manual_seed(manual_seed)
 
 # root directory for dataset
-data_root = "dataset"
+data_root = "./dataset"
 # number of workers for dataloader
 workers = 0
 # batch size
@@ -46,8 +52,6 @@ nz = 100
 ngf = 64
 # size of feature maps in discriminator
 ndf = 64
-# number of training epochs
-num_epochs = 5
 # learning rate for optimisers
 lr = 0.0002
 # beta1 hyperparam for Adam optimisers
@@ -56,6 +60,7 @@ beta1 = 0.5
 ngpu = 1
 
 # loading in dataset
+
 dataset = dset.ImageFolder(root=data_root,
                            transform=transforms.Compose([
                                transforms.Resize(image_size),
@@ -71,13 +76,6 @@ dataloader = torch.utils.data.DataLoader(dataset, batch_size = batch_size,
 # assigning device
 device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
 print(device)
-
-# plotting training images
-# real_batch = next(iter(dataloader))
-# plt.figure(figsize=(8,8))
-# plt.axis("off")
-# plt.title("Training Images")
-# plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=2, normalize=True).cpu(),(1,2,0)))
 
 # custom weights initialisation
 # according to the DCGAN paper, model weights are randomly initialised from a
