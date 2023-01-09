@@ -74,6 +74,8 @@ def read_root(request: Request):
 @app.get("/bird")
 def get_bird(num_samples: int = 1):
     # create batch of latent vectors for visualising generator progression
+    if (num_samples < 1):
+        num_samples = 1
     fixed_noise = torch.randn(num_samples, nz, 1, 1, device=device)
     with torch.no_grad():
         fake = netG(fixed_noise).detach().cpu()
