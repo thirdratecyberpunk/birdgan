@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+import requests
 
 # PyTorch imports
 import torch
@@ -65,10 +66,13 @@ netG.eval()
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# endpoint which returns a Jinja template and 
+# endpoint which returns a Jinja template containing a bird
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+    # endpoint to call bird image from
+    url = "http://localhost:8000/bird?num_samples=64"
+    # pass bird object to template
+    return templates.TemplateResponse("home.html", {"request": request, "url": url})
 
 # endpoint which returns an image of a bird sampled from the Generator model
 @app.get("/bird")
