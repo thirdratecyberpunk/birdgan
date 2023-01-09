@@ -47,8 +47,20 @@ ngpu = 1
 device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
 print(device)
 
-# create batch of latent vectors for visualising generator progression
-fixed_noise = torch.randn(64, nz, 1, 1, device=device)
+# load checkpoint
+CheckPoint = torch.load("checkpoints/seed_42_epochs_1_2023-01-0914:26:25")
+# load generator model
+netG = Generator(ngpu, nz, ngf, nc).to(device)
+
+# 'epoch': num_epochs,
+# 'g_state_dict': netG.state_dict(),
+# 'd_state_dict': netD.state_dict(),
+# 'optimizerG_state_dict': optimizerG.state_dict(),
+# 'optimizerG_state_dict': optimizerG.state_dict(),
+# 'G_losses': G_losses,
+# 'D_losses': D_losses
+netG.load_state_dict(CheckPoint['g_state_dict'])
+netG.eval()
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -61,20 +73,8 @@ def read_root(request: Request):
 # endpoint which returns an image of a bird sampled from the Generator model
 @app.get("/bird")
 def get_bird():
-    # load checkpoint
-    CheckPoint = torch.load("checkpoints/seed_42_epochs_1_2023-01-0914:26:25")
-    # load generator model
-    netG = Generator(ngpu, nz, ngf, nc).to(device)
-
-    # 'epoch': num_epochs,
-    # 'g_state_dict': netG.state_dict(),
-    # 'd_state_dict': netD.state_dict(),
-    # 'optimizerG_state_dict': optimizerG.state_dict(),
-    # 'optimizerG_state_dict': optimizerG.state_dict(),
-    # 'G_losses': G_losses,
-    # 'D_losses': D_losses
-    netG.load_state_dict(CheckPoint['g_state_dict'])
-    netG.eval()
+    # create batch of latent vectors for visualising generator progression
+    fixed_noise = torch.randn(64, nz, 1, 1, device=device)
 
     with torch.no_grad():
         fake = netG(fixed_noise).detach().cpu()
