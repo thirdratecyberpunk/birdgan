@@ -206,10 +206,16 @@ for epoch in range(num_epochs):
             
         iters += 1
 
-# saving model that can be loaded into separate session
-torch.save(netG.state_dict(), f"models/generator_seed_{manual_seed}_epochs_{num_epochs}_{datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')}")
-torch.save(netD.state_dict(), f"models/discriminator_seed_{manual_seed}_epochs_{num_epochs}_{datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')}")
-
+# saving checkpoint that can be loaded into separate session
+torch.save({
+    'epoch': num_epochs,
+    'g_state_dict': netG.state_dict(),
+    'd_state_dict': netD.state_dict(),
+    'optimizerG_state_dict': optimizerG.state_dict(),
+    'optimizerG_state_dict': optimizerG.state_dict(),
+    'G_losses': G_losses,
+    'D_losses': D_losses
+}, f"checkpoints/seed_{manual_seed}_epochs_{num_epochs}_{datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')}")
 
 # visualisation of results and loss
 plt.figure(figsize=(10,5))
