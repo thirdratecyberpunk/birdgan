@@ -19,37 +19,30 @@ import torchvision.utils as vutils
 # model imports
 from Generator import Generator
 
-# TODO: load these from config file for both training AND server
-# root directory for dataset
-data_root = "./dataset"
-# number of workers for dataloader
-workers = 0
-# batch size
-batch_size = 128
-# spatial size of training images
-# images will be forced into this size
-image_size = 64
-# number of channels (for colour images, this value is 3)
-nc = 3
-# size of z latent vector (i.e. generator input)
-nz = 100
-# size of feature maps in generator
-ngf = 64
-# size of feature maps in discriminator
-ndf = 64
-# learning rate for optimisers
-lr = 0.0002
-# beta1 hyperparam for Adam optimisers
-beta1 = 0.5
-# number of GPUs (0 uses CPU)
-ngpu = 1
+# misc
+import yaml
+
+with open('config.yaml', 'r') as file:
+    config = yaml.safe_load(file)
+
+checkpoint = config['checkpoint']
+
+workers = config['workers']
+batch_size = config['batch_size']
+image_size = config['image_size']
+nc = config['nc']
+nz = config['nz']
+ngf = config['ngf']
+lr = config['lr']
+beta1 = config['beta1']
+ngpu = config['ngpu']
 
 # assigning device
 device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
 print(device)
 
 # load checkpoint
-CheckPoint = torch.load("checkpoints/seed_42_epochs_1_2023-01-0914:26:25")
+CheckPoint = torch.load(checkpoint)
 # load generator model
 netG = Generator(ngpu, nz, ngf, nc).to(device)
 

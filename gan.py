@@ -6,6 +6,7 @@ Created on Fri Oct  8 11:36:51 2021
 """
 
 import argparse
+import yaml
 import os
 import random
 import torch
@@ -28,40 +29,34 @@ from Generator import Generator
 parser = argparse.ArgumentParser(description="Train a GAN to generate images of birds.")
 parser.add_argument('--seed', type = int, default = 42, help="Value used as the seed for random generators")
 parser.add_argument('--epochs', type= int, default = 100, help="Number of epochs to run")
+parser.add_argument('--save_epochs', type= int, default = 1, help="How frequently to save checkpoints")
 
 args = parser.parse_args()
 # seed for RNG
 manual_seed = args.seed
 # number of training epochs
 num_epochs = args.epochs
+# how frequently to save checkpoints
+save_epochs = args.save_epochs
+
+with open('config.yaml', 'r') as file:
+    config = yaml.safe_load(file)
 
 print(f"Seed: {manual_seed}")
 random.seed(manual_seed)
 torch.manual_seed(manual_seed)
 
-# root directory for dataset
-data_root = "./dataset"
-# number of workers for dataloader
-workers = 0
-# batch size
-batch_size = 128
-# spatial size of training images
-# images will be forced into this size
-image_size = 64
-# number of channels (for colour images, this value is 3)
-nc = 3
-# size of z latent vector (i.e. generator input)
-nz = 100
-# size of feature maps in generator
-ngf = 64
-# size of feature maps in discriminator
-ndf = 64
-# learning rate for optimisers
-lr = 0.0002
-# beta1 hyperparam for Adam optimisers
-beta1 = 0.5
-# number of GPUs (0 uses CPU)
-ngpu = 1
+data_root = config['data_root']
+workers = config['workers']
+batch_size = config['batch_size']
+image_size = config['image_size']
+nc = config['nc']
+nz = config['nz']
+ngf = config['ngf']
+ndf = config['ndf']
+lr = config['lr']
+beta1 = config['beta1']
+ngpu = config['ngpu']
 
 # loading in dataset
 
@@ -143,6 +138,7 @@ iters = 0
 
 print("Starting training loop")
 for epoch in range(num_epochs):
+    print(f"Starting epoch {epoch}")
     # iterates over the entire dataset
     for i, data in enumerate(dataloader, 0):
         # updates discriminator
@@ -205,17 +201,17 @@ for epoch in range(num_epochs):
             img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
             
         iters += 1
-
-# saving checkpoint that can be loaded into separate session
-torch.save({
-    'epoch': num_epochs,
-    'g_state_dict': netG.state_dict(),
-    'd_state_dict': netD.state_dict(),
-    'optimizerG_state_dict': optimizerG.state_dict(),
-    'optimizerG_state_dict': optimizerG.state_dict(),
-    'G_losses': G_losses,
-    'D_losses': D_losses
-}, f"checkpoints/seed_{manual_seed}_epochs_{num_epochs}_{datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')}")
+    if (epoch + 1) % save_epochs == 0:
+        # saving checkpoint that can be loaded into separate session
+        torch.save({
+            'epoch': num_epochs,
+            'g_state_dict': netG.state_dict(),
+            'd_state_dict': netD.state_dict(),
+            'optimizerG_state_dict': optimizerG.state_dict(),
+            'optimizerG_state_dict': optimizerG.state_dict(),
+            'G_losses': G_losses,
+            'D_losses': D_losses
+        }, f"checkpoints/seed_{manual_seed}_epochs_{epoch}_{datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')}")
 
 # visualisation of results and loss
 plt.figure(figsize=(10,5))

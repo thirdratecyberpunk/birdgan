@@ -1,0 +1,25 @@
+# location to load model from for webserver
+checkpoint: "checkpoints/seed_42_epochs_3_2023-01-0916:35:59"
+
+data_root: "./dataset"
+# number of workers for dataloader
+workers: 0
+# batch size
+batch_size: 128
+# spatial size of training images
+# images will be forced into this size
+image_size: 64
+# number of channels (for colour images, this value is 3)
+nc: 3
+# size of z latent vector (i.e. generator input)
+nz: 100
+# size of feature maps in generator
+ngf: 64
+# size of feature maps in discriminator
+ndf: 64
+# learning rate for optimisers
+lr: 0.0002
+# beta1 hyperparam for Adam optimisers
+beta1: 0.5
+# number of GPUs (0 uses CPU)
+ngpu: 1
