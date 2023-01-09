@@ -123,7 +123,7 @@ netD.apply(weights_init)
 # the expected classification
 criterion = nn.BCELoss()
 
-# ctreate batch of latent vectors for visualising generator progression
+# create batch of latent vectors for visualising generator progression
 fixed_noise = torch.randn(64, nz, 1, 1, device=device)
 
 # real and fake category labels
