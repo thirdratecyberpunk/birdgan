@@ -9,13 +9,16 @@ into expected structure for PyTorch DCGAN tutorial
 import os
 import shutil
 
-src_dir = os.getcwd() + "/archive/train"
+src_dir = os.getcwd() + "/train"
 dest_file = src_dir + "/dataset"
 
 # for each folder:
 for folder in os.listdir(src_dir):
     prepped_folder = folder.lower().replace(" ", "_")
     # for each file in the folder:
+    data_paths = [os.path.join(pth, f) for pth, dirs, files in os.walk(src_dir) for f in files]
+    print(data_paths)
+
     for file in os.listdir(f"{src_dir}/{folder}"):
         # rename it to have the bird name + number
         new_filename = f"{prepped_folder}_{file}"
