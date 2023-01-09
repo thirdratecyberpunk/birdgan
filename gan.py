@@ -20,6 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
+import datetime
 
 parser = argparse.ArgumentParser(description="Train a GAN to generate images of birds.")
 parser.add_argument('--seed', type = int, default = 42, help="Value used as the seed for random generators")
@@ -272,7 +273,12 @@ for epoch in range(num_epochs):
             img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
             
         iters += 1
-        
+
+# saving model that can be loaded into separate session
+torch.save(netG.state_dict(), f"models/generator_seed_{manual_seed}_epochs_{num_epochs}_{datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')}")
+torch.save(netD.state_dict(), f"models/discriminator_seed_{manual_seed}_epochs_{num_epochs}_{datetime.datetime.now().strftime('%Y-%m-%d%H:%M:%S')}")
+
+
 # visualisation of results and loss
 plt.figure(figsize=(10,5))
 plt.title("Generator and Discriminator Loss During Training")
