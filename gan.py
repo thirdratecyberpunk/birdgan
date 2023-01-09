@@ -22,6 +22,9 @@ import matplotlib.animation as animation
 from IPython.display import HTML
 import datetime
 
+from Discriminator import Discriminator
+from Generator import Generator
+
 parser = argparse.ArgumentParser(description="Train a GAN to generate images of birds.")
 parser.add_argument('--seed', type = int, default = 42, help="Value used as the seed for random generators")
 parser.add_argument('--epochs', type= int, default = 100, help="Number of epochs to run")
@@ -93,46 +96,9 @@ def weights_init(m):
     elif classname.find("BatchNorm") != -1:
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0)
-        
-# generator maps the latent space vector z to data-space
-# creates an RGB image with the same size as the training images
-# original example creates a 3*64*64 image
-# uses a series of strided 2d convolutional transpose layers,
-# which are paired with a 2d batch norm layer (layer that normalises the whole
-# batch and a relu activation (returns 0 for negative values, original value for
-# positive values)
-
-class Generator(nn.Module):
-    def __init__(self, ngpu):
-        super(Generator, self).__init__()
-        self.ngpu = ngpu
-        self.main = nn.Sequential(
-            # input is the z vector
-            nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(ngf * 8),
-            nn.ReLU(True),
-            # second layer gets smaller
-            nn.ConvTranspose2d(ngf * 8, ngf * 4, 4 , 2, 1, bias=False),
-            nn.BatchNorm2d(ngf * 4),
-            nn.ReLU(True),
-            # third layer
-            nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1),
-            nn.BatchNorm2d(ngf * 2),
-            nn.ReLU(True),
-            # fourth layer takes you to ngf
-            nn.ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ngf),
-            nn.ReLU(True),
-            # fifth layer takes you to an image
-            nn.ConvTranspose2d(ngf, nc, 4, 2, 1, bias=False),
-            nn.Tanh()            
-        )
-        
-    def forward(self, input):
-        return self.main(input)
     
 # create an instance of the generator class
-netG = Generator(ngpu).to(device)
+netG = Generator(ngpu, nz, ngf, nc).to(device)
 
 # can parallelise the process if there are sufficient GPUs
 if (device.type == "cuda" and ngpu > 1):
@@ -141,42 +107,8 @@ if (device.type == "cuda" and ngpu > 1):
 # apply the weight initialisation
 netG.apply(weights_init)
 
-# discriminator is a binary classification network
-# takes in an image, outputs a scalar probability that the input image is real
-# D takes in 3*64*64 image, processes through Conv2d, BatchNorm2d and LeakyReLU
-# then outputs final probability via Sigmoid (turns into a probability distribution)
-
-class Discriminator(nn.Module):
-    def __init__(self, ngpu):
-        super(Discriminator, self).__init__()
-        self.ngpu = ngpu
-        self.main = nn.Sequential(
-            # input is nc * 64 * 64
-            nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
-            nn.LeakyReLU(0.2, inplace=True),
-            # second layer
-            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-            # third layer
-            nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 4),
-            nn.LeakyReLU(0.2, inplace=True),
-            # fourth layer
-            nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(ndf * 8),
-            nn.LeakyReLU(0.2, inplace=True),
-            # final layer outputs probability
-            nn.Conv2d(ndf * 8 , 1, 4, 1, 0, bias=False),
-            nn.Sigmoid()
-        )
-
-    def forward(self,input):
-        return self.main(input)
-    
-    
 # creating the discriminator
-netD = Discriminator(ngpu).to(device)
+netD = Discriminator(ngpu, nc, ndf).to(device)
 
 # handling multi-gpu
 if (device.type == "cuda" and ngpu > 1):
